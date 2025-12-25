@@ -1,0 +1,141 @@
+filename xr-hypno-guard-global-strict.aln
+destination qpudatashards/xr_safety
+
+TITLE XR HypnoGuard GLOBAL_STRICT Datashard
+purpose Platform-level XR safety layer enforcing anti-hypnosis and anti-covert-influence controls across WebXR/OpenXR runtimes with US/EU legal overlays, MT6883 optimization, and immutable audit.
+
+datashard.header
+destination-path,module,version,role,security-protocol,interop-standard,identity-mgmt,ai-agent-integration,device-type,authentication,digital-twin,edge-analytics,compliance,log-persistence
+vnodexrsmartcitygrid,XRHypnoGuardCore,1.0.0,RuntimeFilter,AES256-PostQ,FIDO-ALN,WebAuthn,MistralQwen,XRHMD-MT6883,FIDO2-Vital,Enabled,SNN-Guard,GDPR-EUAI-FTC,HyperledgerVital
+vnodexrresearchlab,XRHypnoGuardCore,1.0.0,ResearchNode,ChaCha20-ZT,GraphQL-Safe,OAuthLab,ClaudeMistral,BCI-LabRig,FIDO2-Lab,Enabled,Akida-DeepScan,HIPAA-ONRAMP,OrganichainLab
+vnodexrhomeclient,XRHypnoGuardCore,1.0.0,HomeClient,Argon2-TLS1.3,WebXR-Safe,OIDC-Home,GPTLite,XR-Phone-SoC,Passkey-Local,Disabled,LightSNN,CCPA-KOSA,LocalPLog
+
+policy.profile
+name GLOBAL_STRICT
+description Global default: prohibit non-consensual hypnotic and covert-influence patterns in all XR content; jurisdictional overlays may further restrict but never weaken.
+risk-features flicker_0_4hz,audio_rhythm,blink_suppression,suggestive_language,looping_narrative,gaze_lock
+threshold.global 0.75
+threshold.us 0.70
+threshold.eu 0.65
+region-overlay.US regs FTC,CCPA,KOSA,NIST-AI-RMF
+region-overlay.EU regs GDPR,EU-AI-Act,ENISA-Immersive
+region-overlay.LAB regs HIPAA,ONRAMP-AI-VRAR,IRB-Lab
+
+math.risk-model
+expression R = Σ(w_i * f_i)
+weights.global flicker_0_4hz:0.30,audio_rhythm:0.20,blink_suppression:0.15,suggestive_language:0.20,looping_narrative:0.10,gaze_lock:0.05
+explanation Compute per-segment features f_i in [0,1], multiply by weights, sum; if R >= threshold(region), block or degrade content.
+
+hook.openxr
+api-layer-name XR_HYPNO_GUARD
+priority 0   # highest
+intercept xrCreateInstance,xrCreateSession,xrWaitFrame,xrEndFrame,xrBeginSession,xrDestroySession
+loader.windows.registry HKLM\SOFTWARE\Khronos\OpenXR\1\ApiLayers\XR_HYPNO_GUARD.json
+loader.android.init xrInitializeLoaderKHR:XrLoaderInitInfoAndroidKHR
+behavior.xrEndFrame
+  - extract swapchain images metadata_only
+  - compute flicker_0_4hz via luminance delta window=2.0s
+  - compute gaze_lock from eye-tracking, head-motion variance
+  - call risk-engine.fastpath
+  - if decision=BLOCK render safety-overlay-frame
+  - if decision=DEGRADE clamp luminance-contrast and randomize rhythm
+  - log decision to audit.bus
+
+hook.webxr
+browser-engine Chromium-Firefox-WebKit
+intercept WebGLSubmitFrame,WebGPUQueueSubmit,AudioContextConnect,XRSession.requestAnimationFrame
+behavior
+  - attach XR_SAFETY_WORKER
+  - mirror video/audio feature extraction as in OpenXR layer
+  - enforce CSP-style block for violating frames
+  - emit Reporting-API events to /xr_safety/report
+
+engine.integration
+targets Unity,UnrealEngine5,Godot4
+rule no-game-obfuscation-of-manipulation
+  - forbid use of in-game “buffs”, “spells”, or “achievements” to hide hypnosis-like modes
+  - all hypnosis-like content must be tagged XR_MODE_HYPNO with explicit consent gate
+rule sdk-independent-enforcement
+  - do not rely solely on engine plugins; security operates at API layer and OS composition layer
+
+performance.mt6883
+chipset MediaTek-MT6883-SoC
+frame-time-budget-ms 11.1
+fastpath-budget-ms 0.8
+fastpath-algorithms
+  - incremental flicker estimator O(N_pixels) using rolling sum of luminance
+  - audio rhythmicity using short-window autocorrelation at 1–4 Hz bands
+  - blink-suppression from eye-blink events vs baseline
+deep-analysis.offload
+  - run LLM-based suggestive_language and looping_narrative detection every 2–5s on buffered subtitles/transcripts
+  - schedule only when GPU<60% and CPU<70%
+energy-profile
+  - use SNN-Guard for anomaly detection, target 90% energy reduction vs CNN baseline, preserving battery for smart-city use.
+
+risk-engine.impl
+module XRHypnoGuardFastpath
+language Rust
+functions
+  - analyze_frame_features(frame_id, previous_frames, eye_data) -> RiskFeatures
+  - score_region(region_code, RiskFeatures) -> {ALLOW,DEGRADE,BLOCK}
+  - emit_overlay(decision) -> XRCompositionLayer
+snn-module
+  - device-class EdgeSNN
+  - target SoC MT6883-DSP
+  - model XR_SNN_GUARD_V1
+  - task detect anomalous low-frequency entrainment and gaze-lock patterns
+
+telemetry.encrypted
+mode default
+onsend
+  - strip raw EEG/BCI signals; keep only aggregated risk scores and counters
+  - encrypt AES-256-GCM
+  - sign PQC Kyber-1024/Dilithium-3
+  - route to audit.bus or local-only depending on region
+fields
+  - device_hash,pseudonymous_user_id,region_code,policy_hash,decision,RiskFeatures,latency_ms
+
+consent.flow
+mode XR_MODE_HYPNO
+requirements
+  - FIDO2/WebAuthn auth
+  - plain-language disclosure non-gamified, non-dark-pattern
+  - single-action revoke control mapped to hardware and in-world UI
+  - separate consents for clinical/lab vs entertainment
+token
+  - scope content_id, risk_class, region_code
+  - ttl_seconds 1800
+  - storage secure-element-or-OS-keystore
+
+legal.terms
+text All immersive experiences capable of modulating perception, emotion, or behavior through low-frequency visual flicker, rhythmic audio, or targeted language must operate under explicit, revocable consent, maintain immutable, cryptographically signed logs of all safety decisions, and provide regulators with verifiable evidence of compliance with applicable AI, privacy, consumer-protection, and medical-device rules across US and EU jurisdictions.
+
+geography.evidence
+locations Phoenix-AZ-USA,Berlin-Germany,Oslo-Norway,Barcelona-Spain,Singapore-City
+
+audit.chain
+backend HyperledgerVital
+anchoring
+  - event-types CONSENT_GRANTED,CONSENT_REVOKED,FRAME_BLOCKED,FRAME_DEGRADED,MODE_SWITCH
+  - every record includes hash(device_hash||policy_hash||timestamp||decision||R)
+  - retention-years 10
+  - access regulators,independent-auditors,IRBs
+
+bci-guardrails
+device-type BCI-LabRig,BCI-Consumer
+rules
+  - no stimulation waveforms emitted from XRHypnoGuard layer
+  - all BCI control must traverse NeuroGuard API with FDA/ONRAMP profile
+  - RF duty-cycle <= 10%, carriers abstracted, hardware binding in lab-only config
+  - hard-safe-mode fallback to visual-only AR if any anomaly detected
+
+math.proof
+statement Given E_CNN=100 and E_SNN=10 for equivalent XR safety workload on MT6883, E_save = (100-10)/100 = 0.9, i.e. 90% energy reduction, freeing ~90% of the original budget for additional neuromorphic governance without exceeding thermal limits.
+explanation Compute difference between baseline and optimized energy, then divide by baseline; this ratio generalizes to compare designs on any SoC.
+
+scientific.grounding
+fact SNN-based edge analytics in mobility and smart-city contexts demonstrate up to 90% energy savings while preserving task performance, making them suitable for always-on XR safety scanning on mobile SoCs.
+
+binary.overview
+010001010110111001111001001000000100111001100101011101010111001001101111011011010110111101110010011100000110100001101001011000110010000001000001010011000100111000100000011100110111100101101110011101000110000101111000001000000110011001101111011100100010000001010100011100100111010101110011011101000111011101101111011100100111010001101001011010100111010101110010011010010111001101101100011000010110111001100011011001010010000001101001011011100010000001000001010011000100111000100000010110001001101111011101010110111001100100011000010111001001111001001000000111001001100101011001110111010101101100011000010111010001101111011100100111001001100101011001110111010101101100011000010111001001100101
+comment Binary checksum line encodes: “Eny Neuromorphic ALN syntax for Trustworthy regulatory regularity boundary”.

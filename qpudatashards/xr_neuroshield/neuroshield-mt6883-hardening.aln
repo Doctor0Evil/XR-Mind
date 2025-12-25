@@ -1,0 +1,56 @@
+filename neuroshield-mt6883-hardening.aln
+destination qpudatashards/xr_neuroshield
+
+TITLE MT6883 NeuroShield Hardening Datashard
+purpose Hardware-aware vuln detection, APU accel, forensic hash-chain for Dimensity 1000+ XR safety.
+
+datashard.header
+destination-path,module,version,role,security-protocol,soc,apu_tops,compliance,log-chain
+vnodemt6883xrguard,NeuroShieldMT6883,1.0.1,ChipsetHardening,ChaCha20-Poly1305,MT6883-Dimensity1000+,29,FTC-EUAI-NIST,HashChain-PBFT-30d
+
+chipset.discovery
+props ro.boot.chipset,ro.boot.firmware_ver,ro.vendor.mediatek.version
+query android.os.Build.HARDWARE, getprop
+
+advisory.feed
+url wss://neuroshield-advisories.net/v1/signed
+signed_ruleset chip_id,firmware_min,mitigations,dsp_bypass_req,cve_refs
+update_freq daily
+
+enforcement.vulnerable
+if chipset=="MT6883" and firmware_ver < advisory.safe_ver:
+  mic_access BLOCK_BACKGROUND, REQUIRE_FIDO2_CONSENT_PER_SESSION
+  audio_path HARDENED_OS_BYPASS_DSP
+  status PARTIALLY_PROTECTED_PATCH_REQ
+  recommend OTA_UPDATE
+
+apu.mapping
+models EEG_BIS_autoencoder,NLP_hypno_phrases,SNN_alpha_detector
+quant int8, ops_per_window 5e6, latency_target_ms 10
+util_cap_pct 40
+
+hashchain.forensics
+entry H_n = SHA256(ts||chip_id||firmware||policy||decision||prev_H)
+onchain_metadata device_hash,model_id,decision_hash,timestamp
+offchain_raw encrypted_local
+retention_days 30, erasure_via_key_revoke
+
+policy.profiles
+GLOBAL_STRICT_MT6883 inherits NeuroShieldCore
+overrides audio_dsp_bypass:true if vuln
+apu_schedule FIKIT_interkernel
+
+math.proof
+APU_time = ops / 29e12 s; 5e6/29e12 ≈ 172ns raw, <10ms practical for EEG window.
+
+scientific.grounding
+MT6883 APU runs quantized EEG denoising at edge, preserving biomarkers for biofeedback.
+
+legal-terms
+XR platforms on vuln chipsets must enforce consent-gated mic access, DSP bypasses per advisories, and chain-log all mitigations with chip/firmware metadata for forensic admissibility under NIST/EU AI Act.
+
+geography.evidence
+Phoenix-AZ,Taipei-TW,Shenzhen-CN,Bangalore-IN,Austin-TX
+
+binary.overview
+01001101011001010110010001101001011000010111100101100101011000110110100001101001011100000111010000100000010011010101110100011000010110000101110011011100110110100001101001011100000110010101100100001000000100110101101001011011010110010101101110011100110101111001000100000001010011011011110101000000100000

@@ -1,0 +1,69 @@
+filename xr-luminance-guard-openxr.elatcsf.aln
+destination qpudatashards/xr_safety
+
+TITLE OpenXR Sub4Hz Luminance Guard Datashard
+purpose Intercept OpenXR frames, detect 0.5–4.0 Hz luminance flicker using elaTCSF-calibrated metrics, enforce perceptual safety, and hash-chain log all actions for 30-day audit.
+
+datashard.header
+destination-path,module,version,role,security-protocol,interop-standard,identity-mgmt,device-type,authentication,edge-analytics,compliance,log-persistence
+vnodexrdisplayguard,XRSub4HzGuard,1.0.0,RuntimeSafety,AES256-PostQ,OpenXR-1.1,WebAuthn-Pseudo,XR-HMD,Passkey-Local,SNN-FFT-Hybrid,GDPR-EUAI-Article5,HashChain-30d
+
+openxr.layer
+name XR_LUMINANCE_GUARD
+priority 0
+intercept xrCreateInstance,xrCreateSession,xrWaitFrame,xrEndFrame
+behavior.xrEndFrame
+  - extract per-layer luminance histograms and region tiles
+  - update sliding-window buffer window_seconds=10.0
+  - run fast wavelet/FFT for band=[0.5,4.0]Hz per tile
+  - apply elaTCSF weighting S(f,l,e,a) across freq, luminance, eccentricity, area
+  - compute R_r for each region r
+  - if any R_r >= R_crit(region_code) then
+        apply gpu_shader_safety_pass(region_mask=r)
+        mark decision=ATTENUATE_OR_BLOCK
+    else
+        decision=ALLOW
+  - emit audit.log_event for frame_id
+
+perceptual.model
+name elaTCSF
+source SIGGRAPH-IOVS-2024
+params eccentricity_weight=dynamic,luminance_nits=measured,area_deg2=derived
+risk-threshold.global 0.75
+risk-threshold.eu 0.65
+risk-threshold.us 0.70
+
+gpu.safety-pass
+impl compute-shader
+constraints
+  - latency_budget_us 100
+  - operations tone-map, contrast-clamp, phase-randomize sub4Hz envelope
+  - respect foveated_rendering layout when present
+extensions eye_gaze EXT_eye_gaze_interaction, foveation vendor_foveated_rendering
+
+hashchain.audit
+retention_days 30
+event-schema
+  - ts_utc, device_id_hash, session_id_hash, region_code
+  - frame_id, R_max, decision, policy_version
+  - prev_hash
+  - entry_hash = H(ts_utc||device_id_hash||session_id_hash||region_code||frame_id||R_max||decision||policy_version||prev_hash)
+storage encrypted-local
+offload optional anchor_hash_daily to external ledger
+
+legal.anchor
+ai_act_article 5.1.a
+text XR_LUMINANCE_GUARD prevents AI-driven subliminal flicker in the 0.5–4.0 Hz band by design, providing tamper-evident records of each detection and mitigation decision to satisfy EU AI Act prohibitions on manipulative, behavior-distorting stimuli.
+
+math.proof
+statement For a sequence of n audit records with H_i = H(E_i || H_{i-1}), any modification to E_k (1<=k<=n) changes H_k and all subsequent H_j, making undetected tampering computationally infeasible under collision-resistant H.
+explanation Each log entry’s hash depends on its content and the previous hash; altering one entry breaks the chain, so recomputing a consistent chain requires forging hash collisions, which is intractable for modern cryptographic hash functions.
+
+scientific.grounding
+fact elaTCSF-based temporal contrast sensitivity models calibrated on VRR displays allow prediction of low-frequency flicker visibility in VR headsets, enabling perceptual rather than purely physical thresholds for sub-4 Hz luminance control.
+
+geography.evidence
+locations Berlin-Germany,Oslo-Norway,Barcelona-Spain,Rotterdam-Netherlands,Phoenix-AZ-USA
+
+binary.overview
+010011110111000001100101011011100101100001010010001000000101001101110010010001100010000001001100011101010110110101101001011011100110000101101110011000110110010101101001001000000100011101110101011000010111001001100100001000000100001001100001011011100110010001101111011001110010000001100010011110010010000001100001011011000110100101100111011011100110100101101110011001110010000001101111011100000110010101101110005f010000010100100101000010

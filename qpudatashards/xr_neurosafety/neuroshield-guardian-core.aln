@@ -1,0 +1,99 @@
+filename neuroshield-guardian-core.aln
+destination qpudatashards/xr_neurosafety
+
+TITLE NeuroShield Guardian Core Datashard
+purpose Multi-layer XR safety stack to detect and mitigate hypnotic/entrainment-like signals, enforce jurisdiction-aware policies, and maintain real-time performance on mobile XR SoCs.
+
+datashard.header
+destination-path,module,version,role,security-protocol,interop-standard,device-type,ai-accelerator,authentication,compliance,log-persistence
+vnodexrneurosafegrid,NeuroShieldCore,1.0.0,RuntimeGuardian,AES256-PostQ,OpenXR-1.1+WebXR,XR-HMD-SoC,NPU+GPU,FIDO2-WebAuthn,EUAI-FTC-NIST-XRSI,HashChain-30d
+
+guards
+VisualGuard
+  input downsampled_luminance_per_frame
+  analysis STFT_or_wavelet
+  band_hz 0.5-4.0
+  metric visual_risk V in [0,1]
+  action attenuate_contrast,clamp_luminance_gradient
+AudioGuard
+  input pcm_audio_mix
+  analysis FFT_on_envelope
+  band_hz 1.0-8.0
+  metric audio_risk A in [0,1]
+  action lowpass_filter,phase_randomize,micro_dither
+InteractionGuard
+  input app_state_primitives
+  analysis loop_detection
+  metric loop_index I in [0,1]
+  action require_opt_in,insert_micro_break
+TextNLPGuard
+  input subtitles_text_overlay
+  analysis ondevice_nlp_pattern_match
+  metric suggestive_score T in [0,1]
+  action mask_text,neutralize_phrasing
+PhysiologicalGuard
+  input blink_rate,eye_tracking
+  analysis baseline_deviation
+  metric blink_suppression B in [0,1]
+  action insert_break,reduce_load
+
+stimulus.window
+duration_s 5.0
+features V,A,I,T,B
+decision_function R_global = α*V + β*A + γ*I + δ*T + ε*B
+region_thresholds GLOBAL:0.75, EU:0.65, US:0.70
+
+policy.profiles
+GLOBAL_STRICT
+  mode PROTECTIVE_DEFAULT
+  prohibits covert_hypnosis,subliminal_messaging,nonconsensual_behavioral_manipulation
+  highrisk_modes guided_relaxation,meditation require explicit_revocable_consent
+US_PHOENIX_AZ
+  overlay relax_logging_style
+  cannot_disable GLOBAL_STRICT core_prohibitions
+EU
+  overlay tighten_thresholds,mandatory_block_on_high_risk_vulnerable
+  legal_anchor EU_AI_Act_Article5_1a
+ENTERPRISE_HARDENED
+  mode ENTERPRISE_HARDENED
+  thresholds GLOBAL:0.6, EU:0.5, US:0.6
+  use in industrial,training,clinical contexts
+
+policy.anti_obfuscation
+rule ENFORCE_NO_GAME_DISGUISE
+condition app_genre == "GAME" AND V>v0 AND I>i0 AND T>t0
+effect flag_for_audit, elevate_to_ENTERPRISE_HARDENED or block_launch
+
+performance.modes
+DEFAULT_REALTIME_SAFE
+  max_frame_budget_ms 1.0
+  algorithms fast_STFT,fast_FFT,light_nlp
+  threads render_audio_critical
+DEEP_SWEEP_OFFPATH
+  schedule when headset_paused OR app_install OR idle
+  tasks deep_ml_nlp,fs_network_sweep,policy_consistency_checks
+  scheduler GPU FIKIT_style gap_filling, low_priority_kernels
+  constraints gpu_overhead_pct <= 5
+
+hashchain.logging
+retention_days 30
+event_fields ts_utc,device_hash,session_hash,region_code,profile,R_global,actions,prev_hash
+hash_function SHA-256_or_better
+entry_hash H = Hash(fields || prev_hash)
+storage local_encrypted + optional_remote_audit_sink
+
+math.proof
+statement For each window, if R_global >= θ_region then applying mitigation actions reduces exposure to prohibited subliminal patterns while keeping per-frame compute < 1 ms, satisfying EU AI constraints and real-time XR comfort requirements.
+explanation Combine weighted multi-guard risk into a scalar, compare against jurisdictional thresholds, and design fast-path algorithms so that the added processing time remains a small fraction of the frame budget.
+
+scientific.grounding
+fact XR flicker sensitivity peaks at low temporal frequencies; models like elaTCSF and stelaCSF show high perceptual sensitivity and discomfort in the 0.5–4 Hz band, supporting targeted monitoring of this range in immersive displays.
+
+legal-terms
+text NeuroShield Guardian enforces a secure-by-default profile that detects and attenuates sensory and interaction patterns resembling hypnotic induction or subliminal manipulation, logs all decisions in a tamper-evident chain for at least thirty days, and applies jurisdiction-specific thresholds aligned with the EU AI Act’s prohibition of subliminal techniques and applicable US consumer-protection doctrines, while prohibiting the use of game mechanics or rewards to disguise manipulative content.
+
+geography.evidence
+locations Phoenix-AZ-USA,Berlin-Germany,Oslo-Norway,Rotterdam-Netherlands,Seoul-SouthKorea
+
+binary.overview
+01001110011001010111010101110010011011110101001101101000011010010110010101101100011001000100000001000111011101010110000101110010011001000110100101100001011011100100000001001001011011100111010001100101011100100111000001101111011100100110110001100001011101000110010101100100001000000100100001111001011100000110111001101111011101000110100101100011001000000101001101100001011001100110010101110100011110010000100000

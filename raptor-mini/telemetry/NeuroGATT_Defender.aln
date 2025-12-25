@@ -1,0 +1,11 @@
+module NeuroGATT_Defender {
+  datashard DefenderConfig {
+    name: string;
+    ble_guard_rules: [string];
+    incident_prefix: string;
+  }
+
+  handler detect_ble_attack(payload) {
+    // placeholder: generate incident when BLE GATT patterns match
+  }
+}

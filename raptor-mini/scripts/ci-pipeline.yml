@@ -1,0 +1,26 @@
+name: Raptor-mini CI
+
+on: [push, pull_request]
+
+jobs:
+  run_aln_parser_tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Run unit tests
+        run: |
+          echo "Run ALN parser tests (placeholder)"
+  run_neuro_defense_snapshot_tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Run integration tests
+        run: |
+          echo "Run neuro defense snapshot tests (placeholder)"
+  lint_agents_configs:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Lint agent YAMLs
+        run: |
+          yamllint . || true

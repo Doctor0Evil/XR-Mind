@@ -1,0 +1,4 @@
+# scrub-rules.yaml
+rules:
+  - id: remove_subliminal_audio
+    action: "replace_with_warning"

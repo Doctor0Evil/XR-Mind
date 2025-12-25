@@ -1,0 +1,11 @@
+{
+  "did": "did:ion:EiD8J2b3K8k9Q8x9L7m2n4p1q5r6s7t8u9v0w1x2y3z4A5B6C7D8E9F0",
+  "purpose": "Public DID used to identify CI/automation for ALN validation and governance attestations (no private keys stored here).",
+  "services": [
+    {
+      "id": "aln-validation",
+      "type": "ALNValidator",
+      "description": "Used as public identifier for CI jobs performing ALN linting and validation; signing/attestation resolved out-of-band."
+    }
+  ]
+}

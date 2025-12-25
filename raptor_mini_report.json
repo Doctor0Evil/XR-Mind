@@ -1,0 +1,15 @@
+{
+  "files": [
+    {
+      "path": ".\\raptor-mini\\telemetry\\NeuroGATT_Defender.aln",
+      "errors": [
+        "SCHEMA:handler_missing_termination"
+      ]
+    }
+  ],
+  "summary": {
+    "total": 8,
+    "passed": 7,
+    "failed": 1
+  }
+}

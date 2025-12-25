@@ -1,0 +1,45 @@
+name: CI
+
+on:
+  push:
+    paths:
+      - '**/*.aln'
+      - 'scripts/**'
+  pull_request:
+    paths:
+      - '**/*.aln'
+      - 'scripts/**'
+
+jobs:
+  aln_lint:
+    name: ALN Safety Check
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        folder: [ 'raptor-mini', 'vitalnet', 'systems' ]
+    # Independent safety check per folder; shows as "ALN Safety Check" for each matrix entry
+    steps:
+      - name: ALN Safety Check - prepare
+        run: echo "ALN Safety Check: validating .aln files under '${{ matrix.folder }}'"
+      - uses: actions/checkout@v3
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.x'
+      - name: Cache pip (optional)
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-
+      - name: Run ALN linter
+        # Note: use the repo-level DID in did-config.json for signing/attestation in future; do not store private keys here.
+        run: python scripts/aln_lint.py --folder ${{ matrix.folder }} --report-json aln_lint_report_${{ matrix.folder }}.json
+
+      - name: Upload ALN lint report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: aln-lint-${{ matrix.folder }}
+          path: aln_lint_report_${{ matrix.folder }}.json

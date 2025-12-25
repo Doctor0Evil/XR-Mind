@@ -1,0 +1,235 @@
+# File: /vitalnet/neuraldefense/Global_Neural_Manipulation_Defense_Architecture.aln
+# Format: Production ALN research-spec + deployment blueprint
+# Role: End‑to‑end detection, mitigation, and legal prohibition of malicious neural manipulation
+# Scope: GitHub codebases, XR/BCI platforms, smart‑city infra [web:0]
+
+module VitalNet.GlobalNeuralDefense v4_2_5
+{
+    import VitalNetCore.Compliance;
+    import VitalNetCore.GitHubGuard;
+    import VitalNetCore.XRShield;
+    import VitalNetCore.BCISentinel;
+    import VitalNetCore.IncidentRouter;
+    import VitalNetCore.Neurorights;
+
+    # =========================
+    # 1. LEGAL FRAMEWORK ENGINE
+    # =========================
+
+    struct JurisdictionScore {
+        float EU;   # EU AI Act Art.5(1)(a) + GDPR/EDPB [web:0]
+        float US;   # CA SB 1189, CO CPA opt‑in, MN neuro‑penalties [web:0]
+        float CL;   # Chile Ley 21.383 + Supreme Court deletion precedent [web:0]
+    };
+
+    function global_compliance(JurisdictionScore j) -> float
+    {
+        # C = 0.4·EU + 0.3·US + 0.3·CL (0–1) [web:0]
+        return 0.4 * j.EU + 0.3 * j.US + 0.3 * j.CL;
+    }
+
+    policy LegalBinding v1_0
+    {
+        target_min_score = 0.85;  # Deploy only if ≥0.85 global compliance. [web:0]
+
+        rule XR_AIAct_5_1_a
+        {
+            # All XR audio/visual nodes must declare modulation profile; else auto‑mute. [web:0]
+            require_fields = ["intensity","duration","consent_revocation_path"];
+            on_missing_metadata: action = "block";
+        }
+
+        rule US_NeuralData
+        {
+            # CA SB 1189: employee/B2B neural data opt‑out; CO: opt‑in. [web:0]
+            require_fido_webAuthn_consent = true;
+            block_if_consent_absent       = true;
+        }
+
+        rule Chile_NeuroRights
+        {
+            # Block neuronal pattern extraction without Agencia consent. [web:0]
+            prohibited = ["reidentification","covert_capture","intent_monetization"];
+        }
+    }
+
+    # =====================================
+    # 2. GITHUB‑NATIVE NEURO‑SAFETY PIPELINE
+    # =====================================
+
+    pipeline GitHub_NeuroScan v1_1
+    {
+        triggers = ["push","pull_request","release"];
+
+        step signature_scan
+        {
+            blocked_regex = ".*(hypno|trance|obey|submit|relax.*now|feel.*calm).*(\\.loop|\\.induce|\\.nudge)";
+            blocked_patterns = [
+                "repetitive_phrasal_3x_30s",
+                "descending_pitch_50Hz_2s",
+                "binaural_10_40Hz_offset"
+            ];                                         # XR/BCI hypnotic heuristics. [web:0]
+        }
+
+        step voice_metric_scan
+        {
+            # R = N_r / T_w > 0.1 → hypnotic loop. [web:0]
+            compute_voice_hypnotic_score = true;
+            threshold_block = 0.1;
+        }
+
+        step ml_teaching_loop
+        {
+            # Label each finding → fine‑tune Mistral/Qwen → update Copilot hints. [web:0]
+            export_labels_to = "VitalNet_ML_Teaching_Set";
+            retrain_schedule = "daily";
+        }
+
+        result_gate
+        {
+            if findings.risk_score >= 0.7 then
+                status = "BLOCK_BUILD";
+            else if findings.risk_score >= 0.4 then
+                status = "REVIEW_REQUIRED";
+            else
+                status = "ALLOW";
+            end
+        }
+    }
+
+    # ================================
+    # 3. RUNTIME XR/BCI SAFETY KERNEL
+    # ================================
+
+    rule XR_VoiceHypnoticGuard
+    {
+        name      = "voicehypnoticguard";
+        matchtype = "spectrogram_cnn";
+        targets   = "xr_audio_streams";
+        action    = "mute+quarantine";               # Hard fail at runtime. [web:0]
+    }
+
+    rule BCI_NoLoopInduction
+    {
+        name      = "noloopinduction";
+        targets   = "devneurobus0";
+        max_rf_mweirp = 0.5;                         # RF/EM limits (Part 15 proxy). [web:0]
+    }
+
+    engine VoicePatternAnalysis v1_0
+    {
+        # Whisper + Qwen: MFCC/pitch/energy + semantics. [web:0]
+        threshold_R_loop      = 0.1;
+        threshold_cmd_ratio   = 2.0;
+        threshold_prosody_int = 20.0;   # ∫|Δf(t)|dt > 20 Hz·s [web:0]
+
+        on_audio_frame(audio, transcript)
+        {
+            float R_loop    = Metrics.RepetitionRate(audio, transcript);
+            float cmd_ratio = Metrics.ImperativeToModal(transcript);
+            float prosody_I = Metrics.ProsodyIntegral(audio);
+
+            if R_loop > threshold_R_loop then
+                XRShield.MuteSource(audio.channel_id);
+            end
+
+            if cmd_ratio > threshold_cmd_ratio then
+                XRShield.WarnSession("High embedded command density.");
+            end
+
+            if prosody_I > threshold_prosody_int then
+                XRShield.IsolateUser(audio.session_id);
+            end
+        }
+    }
+
+    # =======================================
+    # 4. INCIDENT RESPONSE + LAW ENFORCEMENT
+    # =======================================
+
+    enum Severity { LOW, MEDIUM, HIGH, CRITICAL };
+
+    struct IncidentPackage
+    {
+        string id;
+        Severity severity;
+        string jurisdiction;
+        float   ai_act_5_1_a_score;
+        float   neuraldata_risk_score;
+        string  xr_app_id;
+        string  repo;
+        string  hash_bundle;
+        string  timestamp_utc;
+    };
+
+    router LawEnforcementBridge v1_0
+    {
+        on_incident(IncidentPackage p)
+        {
+            # Immutable anchoring. [web:0]
+            HyperledgerVital.Append(p);
+
+            if p.severity == LOW then
+                SOC.CreateTicket(p);
+            else if p.severity == MEDIUM then
+                SafetyBoard.Enqueue(p);
+                Notify.User(p.xr_app_id);
+            else if p.severity == HIGH then
+                SafetyBoard.Enqueue(p);
+                Notify.User(p.xr_app_id);
+                Notify.Regulator.Select(p.jurisdiction);
+            else if p.severity == CRITICAL then
+                SafetyBoard.Enqueue(p);
+                Notify.User(p.xr_app_id);
+                Notify.Regulator.Select(p.jurisdiction);
+                Notify.LawEnforcement.API(p.jurisdiction);
+            end
+        }
+    }
+
+    # ==================================
+    # 5. RESEARCH PROGRAM TRACKING (10x)
+    # ==================================
+
+    research_matrix NeuralDefense_RnD v1_0
+    {
+        entry[0] = "FederatedAnomaly:L=Σw_i l_i;80%_breach_reduction;CCPA/GDPR;LA,Singapore,Berlin";
+        entry[1] = "SNNProsodyFilter:90%_edge_energy_saving;NIST/EU_AI_act;Rotterdam,Munich,Austin";
+        entry[2] = "TSNMuting:D=B/S+P<1ms;ISO26262;Munich,Detroit,Amsterdam";
+        entry[3] = "NeurodataSovereignty:S=L·0.4-V;OECD/eIDAS;Sydney,Berlin,Singapore";
+        entry[4] = "CephNeuralLakes:2x_perf;PCI-DSS;SiliconValley,Barcelona,Austin";
+        entry[5] = "XRTrafficOpt:20%_emissions_cut;EU_Green_Deal;London,Singapore,Tokyo";
+        entry[6] = "MultiAgentEscalation:+30%_response;ISO42001;Barcelona,Oslo,Phoenix";
+        entry[7] = "SelfHealingBCI:95%_uptime;CybersecurityAct2022;Tokyo,NewOrleans,Singapore";
+        entry[8] = "FIDO2NeuralAuth:99%_fraud_reduction;CCPA/eIDAS;SouthKorea,Berlin,Oslo";
+        entry[9] = "XRZooAudit:12528_apps_scan;ACM_CHI/IEEE_VR;MetaHorizon,Steam,VIVEPORT";
+    }
+
+    # ======================
+    # 6. QPU.DATASHARD HEADER
+    # ======================
+
+    datashard neuraldefense_qpu v1_0
+    {
+        destination-path      = "vnodeglobalneuroguard";
+        module                = "VitalNetCore";
+        version               = "4.2.4";
+        role                  = "GlobalSentinel";
+        security-protocol     = "ChaCha20-PQC";
+        interop-standard      = "GraphQL-Safe";
+        identity-mgmt         = "OAuthVital";
+        ai-agent-integration  = "ClaudeMistralQwen";
+        device-type           = "XRBCIGame";
+        authentication        = "MultiFactorNeural";
+        digital-twin          = "Enabled";
+        edge-analytics        = "AkidaSNN";
+        compliance            = "EUAIActCCPAChileLey21383";
+        log-persistence       = "HyperledgerVital";
+    }
+}
+
+# Destination:
+#   /vitalnet/neuraldefense/Global_Neural_Manipulation_Defense_Architecture.aln
+# Engines:
+#   Bind GitHub_NeuroScan into default CI templates; attach VoicePatternAnalysis + XR_VoiceHypnoticGuard
+#   to Unreal/Unity/Godot audio buses and BCI drivers; run LawEnforcementBridge as shared incident fabric. [web:0]

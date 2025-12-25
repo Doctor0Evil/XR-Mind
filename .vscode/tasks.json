@@ -1,0 +1,17 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "ALN: First-time Setup",
+      "type": "shell",
+      "command": "python scripts/first_time_setup.py",
+      "presentation": {
+        "reveal": "always",
+        "panel": "shared"
+      },
+      "runOptions": {
+        "runOn": "folderOpen"
+      }
+    }
+  ]
+}

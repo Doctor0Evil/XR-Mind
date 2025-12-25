@@ -1,0 +1,9 @@
+{
+  "name": "mindsoft-plugin",
+  "version": "0.1.0",
+  "description": "Plugin manifest for Mindsoft IDE extensions",
+  "entry": {
+    "ts": "./sdk/ts/index.ts",
+    "py": "./sdk/py/__init__.py"
+  }
+}

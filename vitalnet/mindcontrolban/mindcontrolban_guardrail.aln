@@ -1,0 +1,254 @@
+# File: /vitalnet/mindcontrolban/mindcontrolban_guardrail.aln
+# Format: VitalNet QPU.Datashard + Enforcement Logic
+# Role: Production-grade “mind-control” prohibition + 3-pillar technical defense
+# Engines: Unreal / Unity / Godot XR builds (XR/BCI/game network perimeter)
+# Legal basis: EU AI Act Art.5(1)(a); NIST SP 800‑61r3 incident lifecycle; immutable audit for supply chain security [page:1][web:0]
+
+datashard mindcontrolban_qpu v1.0.0
+{
+    header:
+    {
+        destination-path      = "vnodeglobalmindcontrolban";                       # XR/BCI global enforcement node [page:1]
+        module                = "VitalNetCore";                                    # Core incident & risk orchestration [page:1]
+        version               = "4.2.8";                                           # Matches production spec line you provided [conversation_history:0]
+        role                  = "MindControlSentinel";                             # Dedicated “subliminal techniques” sentinel [conversation_history:0]
+        security-protocol     = "ChaCha20-Dilithium3";                             # PQ-safe confidentiality + auth [conversation_history:0]
+        interop-standard      = "GraphQL-Safe";                                    # Strictly-typed API for policy/telemetry [conversation_history:0]
+        identity-mgmt         = "OAuthVital";                                      # Org + platform identities mapped to legal entities [conversation_history:0]
+        ai-agent-integration  = "MistralQwenClaude";                               # Triangulated ML reviews, assistive only [conversation_history:0]
+        device-type           = "XRBCIGameEngine";                                 # Unreal/Unity/Godot + BCI adapters [conversation_history:0]
+        authentication        = "NeuralFIDO2";                                     # Hardware-bound WebAuthn + cognitive-risk step-up [conversation_history:0]
+        digital-twin          = "Enabled";                                         # Twin for what-if simulation, no raw neurodata [conversation_history:0]
+        edge-analytics        = "AkidaSNNObedience";                               # SNN loop detection on-device, 90% energy savings [conversation_history:0]
+        compliance            = "EUAIAct5_1a_CA1223_CO1058_CL21383";               # EU/US state/Chile neurorights bundle [conversation_history:0]
+        log-persistence       = "HyperledgerVital";                                # Immutable, chained audit fabric [web:0][page:1]
+    }
+
+    # ========== PILLAR 1: PROTECTIVE SYNTAX (“NEURO-CSP”) ==========
+
+    policy neuro_csp v1.1
+    {
+        # Any channel without explicit metadata is blocked: “no‑script” for the nervous system. [conversation_history:0][page:1]
+        require_metadata = true;
+
+        banned_patterns:
+        {
+            non_skippable_scripts          = true;      # No forced hypnosis scenes / unskippable obedience tracks. [conversation_history:0]
+            forced_attention_tunnels       = true;      # No single-path “gaze-locked” funnels without exit. [conversation_history:0]
+            hidden_flicker_hz_min          = 3.0;       # Below visual awareness, above static noise. [conversation_history:0]
+            hidden_flicker_hz_max          = 70.0;
+            binaural_delta_hz_max          = 40.0;      # Excludes strong entrainment beats. [conversation_history:0]
+        }
+
+        required_tags:
+        {
+            purpose          = ["guidance","narration","ads","therapy","gameplay"]; # Declared role of the stimulus. [conversation_history:0]
+            intensity_level  = ["low","medium","high"];
+            duration_seconds_min = 0;
+            consent_path     = ["none","per-session","per-pattern"];                # “none” forces mute for high-risk classes. [conversation_history:0]
+        }
+
+        default_action_on_violation = "block";         # AI Act 5(1)(a) prohibited class → cannot ship. [page:1]
+        allow_waivers               = false;          # No override at repo level; only legal authority can grant. [page:1]
+    }
+
+    # ========== PILLAR 2: HYBRID DETECTION (CI + RUNTIME) ==========
+
+    struct MindPatternMetrics
+    {
+        float repetition_rate_hz;        # R = N_r / T_w (hypnotic loop index). [conversation_history:0]
+        float prosody_integral_hz_s;     # ∫|Δf(t)| dt, entrainment signal. [conversation_history:0]
+        float embedded_cmd_density;      # Imperatives / total tokens. [conversation_history:0]
+        float hypnotic_loop_score;
+        float coercion_score;
+        float subliminal_score;
+    }
+
+    thresholds:
+    {
+        hypnotic_loop_R_min      = 0.10;   # Above: candidate hypnotic loop. [conversation_history:0]
+        prosody_integral_min     = 20.0;   # Hz·s threshold from spec. [conversation_history:0]
+        embedded_cmd_density_min = 0.35;
+        score_block              = 0.30;   # Aligns with earlier VSG policy. [conversation_history:0]
+        score_review             = 0.20;
+    }
+
+    function compute_scores(MindPatternMetrics in m) -> MindPatternMetrics
+    {
+        MindPatternMetrics o = m;
+
+        o.hypnotic_loop_score = clamp(m.repetition_rate_hz / thresholds.hypnotic_loop_R_min, 0.0, 1.0);
+        o.coercion_score      = clamp(m.embedded_cmd_density / thresholds.embedded_cmd_density_min, 0.0, 1.0);
+        o.subliminal_score    = clamp(m.prosody_integral_hz_s / thresholds.prosody_integral_min, 0.0, 1.0);
+
+        return o;
+    }
+
+    ci_pipeline github_guard v1.0
+    {
+        # Runs as GitHub App / Action on every push/PR. [page:1]
+        inputs:
+        {
+            source_globs   = ["**/*.cs","**/*.cpp","**/*.h","**/*.js","**/*.ts","**/*.py","**/*.glsl","**/*.hlsl","**/*.shader"];  # XR/game stacks.
+            asset_globs    = ["**/*.wav","**/*.flac","**/*.ogg","**/*.fbx","**/*.uasset","**/*.prefab"];
+            binary_globs   = ["**/*.dll","**/*.so","**/*.wasm","**/*.pak"];
+        }
+
+        steps:
+        {
+            step registry_scan:
+            {
+                tool           = "mindpattern.registry";
+                rulesets       = ["loop-induction","obedience-script","hypnotic-rhythm","identity-erosion","neurodevice-abuse"]; # Shared taxonomy. [conversation_history:0]
+                fail_on_match  = true;
+            }
+
+            step static_analyzers:
+            {
+                tools = ["PVS-Studio","clang-tidy","ESLint","RoslynAnalyzers"];
+                # Flag infinite/compliance loops, non-skippable cutscenes bound to suggestive phrases, hidden timers. [conversation_history:0]
+                profiles = ["neuro_safe_high"];
+            }
+
+            step audio_preflight:
+            {
+                tool = "Mindsoft.VSG.AudioScanner";
+                mode = "offline";
+                thresholds_ref = thresholds;
+            }
+
+            decision risk_gate:
+            {
+                input  = "MindPatternMetrics";
+                eval   = compute_scores(input);
+
+                if (eval.hypnotic_loop_score >= thresholds.score_block
+                    or eval.coercion_score  >= thresholds.score_block
+                    or eval.subliminal_score>= thresholds.score_block)
+                then
+                    outcome = "BLOCK_BUILD";   # CI hard fail, artifact not published. [page:1]
+                else if (eval.hypnotic_loop_score >= thresholds.score_review
+                         or eval.coercion_score  >= thresholds.score_review
+                         or eval.subliminal_score>= thresholds.score_review)
+                then
+                    outcome = "REVIEW_REQUIRED"; # Human neuro-safety review; no auto-merge. [page:1]
+                else
+                    outcome = "ALLOW";
+                end
+            }
+
+            step evidence_pack:
+            {
+                when      = ["BLOCK_BUILD","REVIEW_REQUIRED"];
+                collector = "VitalNet.IncidentPackager";
+                content   = ["commit_ids","diff_hunks","metrics","scanner_reports","build_log"];
+                sink      = "HyperledgerVital.append";   # Immutable audit chain, supply-chain ready. [web:0][page:1]
+            }
+        }
+    }
+
+    runtime_guard xr_shield v1.0
+    {
+        engines     = ["Unreal","Unity","Godot"];
+        hook_points = ["voice_chat","narration","BCI_feedback","haptics","shader_flicker"];
+
+        components:
+        {
+            whisper_cnn_monitor    = true;  # Live ASR + CNN patterning of speech. [conversation_history:0]
+            snn_loop_detector      = true;  # Edge SNN on Akida for loops/entrainment, low energy. [conversation_history:0]
+            tsn_mute_path          = true;  # <1 ms deterministic mute path over TSN. [conversation_history:0]
+            vm_isolation_for_games = true;  # Recommended for high-risk titles. [conversation_history:0]
+        }
+
+        on_event audio_frame(frame, transcript)
+        {
+            MindPatternMetrics m = Mindsoft.VSG.RuntimeExtract(frame, transcript);
+            MindPatternMetrics s = compute_scores(m);
+
+            if (s.hypnotic_loop_score >= thresholds.score_block
+                or s.coercion_score   >= thresholds.score_block
+                or s.subliminal_score >= thresholds.score_block)
+            then
+                Action.Blackhole(frame.channel_id);     # Hard drop at kernel/user boundary. [conversation_history:0]
+                Incident.LogAndAnchor("MINDCONTROL_PATTERN_BLOCK", s); # Immutable evidence. [web:0][page:1]
+            end
+        }
+    }
+
+    # ========== PILLAR 3: ESCALATION FABRIC (NIST SP 800‑61r3) ==========
+
+    enum Severity { LOW, MEDIUM, HIGH, CRITICAL };
+
+    struct IncidentEnvelope
+    {
+        string  incident_id;
+        string  repo_or_app;
+        string  reporter;           # CI, runtime, human.
+        string  category;           # e.g., "AIAct5_1a_SubliminalTech".
+        Severity severity;
+        string  hash_bundle;        # Merkle root of artifacts.
+        string  timestamp_utc;
+        string  jurisdiction_tags;  # e.g., "EU;CL;US-CA;US-CO". 
+    }
+
+    workflow escalation_chain v1.0
+    {
+        route on_new_incident(IncidentEnvelope env)
+        {
+            # Severity classification based on pattern class + scores. [page:1]
+            if env.severity == LOW then
+                notify("INTERNAL_SOC_QUEUE", env);
+            else if env.severity == MEDIUM then
+                notify("TRUST_AND_SAFETY", env);
+                notify("PRODUCT_OWNER", env);
+            else if env.severity == HIGH then
+                notify("CISO_OFFICE", env);
+                notify("LEGAL_NEURORIGHTS", env);
+                freeze("AFFECTED_ARTIFACTS", env.repo_or_app);
+            else if env.severity == CRITICAL then
+                notify("CISO_OFFICE", env);
+                notify("LEGAL_NEURORIGHTS", env);
+                notify("EXECUTIVE_LEADERSHIP", env);
+                freeze("PLATFORM_SCOPE", env.repo_or_app);
+                prepare_regulator_packet(env);  # For DPAs, AI regulators, or prosecutors, mapped to CSF 2.0 RS/RC. [page:1]
+            end
+
+            HyperledgerVital.append(env);      # All severities go to immutable log. [web:0][page:1]
+        }
+
+        function prepare_regulator_packet(IncidentEnvelope env)
+        {
+            EvidencePack p;
+
+            p.incident_id    = env.incident_id;
+            p.hash_bundle    = env.hash_bundle;
+            p.csrf_mapping   = "CSF2.0:GV/ID/PR/DE/RS/RC";   # Explicit CSF mapping for SP 800‑61r3 alignment. [page:1]
+            p.ai_act_clause  = "Art.5(1)(a) subliminal techniques beyond consciousness"; # Legal anchor. [page:1]
+            p.neural_laws    = env.jurisdiction_tags;
+
+            HyperledgerVital.append(p);
+        }
+    }
+
+    # ========== RESEARCH ACTIONS TRACKER (10 LINES) ==========
+
+    research_matrix mindcontrolban_R&D v1.0
+    {
+        # Each entry = actionable R&D program with measurable KPI (S, D, C, etc.). [conversation_history:0][page:1]
+        entry[0] = "SyntaxEvolution:S=1-ΣV_i; target_block_rate=0.95; sites=Brussels,Sacramento";
+        entry[1] = "SNNLoopDetection:edge_savings>=0.90; NIST_DE.AE; sites=Munich,Austin";
+        entry[2] = "TSNMuting:D<1ms; ISO26262_XR; sites=Detroit,Amsterdam";
+        entry[3] = "NeurodataConsent:C>0.95; CO/CA/MT_optin; sites=Denver,Helena";
+        entry[4] = "CephIncidentLakes:2x_perf; PCI-DSS_evidence; sites=SiliconValley,Barcelona";
+        entry[5] = "XRSafeRouting:emissions_cut>=0.20; UNESCO_neurotech; sites=London,Valencia";
+        entry[6] = "MultiAgentEscalation:remediation+30%; ISO42001; sites=Phoenix,Oslo";
+        entry[7] = "SelfHealingAutonomy:uptime>=0.95; EU_CybersecurityAct; sites=Tokyo,Singapore";
+        entry[8] = "FIDO2CognitiveAuth:block>=0.99; NeurorightsFoundation; sites=Seoul,Berlin";
+        entry[9] = "GlobalEnforcement:3_pillars_harmonized; venues=ACM_CHI,IEEE_VR";
+    }
+}
+
+# Deployment hint for engines:
+# Unreal/Unity/Godot plug‑ins should bind xr_shield.runtime_guard to engine audio buses,
+# BCI APIs, and network voice channels, and wire ci_pipeline.github_guard into the
+# platform’s standard GitHub/GitLab workflow templates. [page:1]

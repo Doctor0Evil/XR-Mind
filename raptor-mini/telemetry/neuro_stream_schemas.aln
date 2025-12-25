@@ -1,0 +1,18 @@
+module NeuroStreams {
+  struct GaleaSensorStreams {
+    eeg_channels: [int];
+    sample_rate_hz: int;
+    metadata: map<string,string>;
+  }
+
+  struct NeurodataComplianceScore {
+    jurisdiction: string;
+    score: float;
+  }
+
+  struct XRPatternMetrics {
+    loop_count: int;
+    haptic_intensity: float;
+    suspicious_score: float;
+  }
+}

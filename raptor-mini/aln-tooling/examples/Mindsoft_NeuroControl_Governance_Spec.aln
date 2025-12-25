@@ -1,0 +1,7 @@
+// Placeholder governance spec (skeleton)
+module GovernanceSpec {
+  datashard Policy {
+    name: string;
+    body: string;
+  }
+}

@@ -1,0 +1,11 @@
+# Neural-telemetry analyst agent config
+role: neuro_telemetry_analyst
+description: "Neural-telemetry specialist"
+skills:
+  - ingest EEG/EMG/EOG/EDA/PPG metadata schemas
+  - design ALN structs/enums for telemetry
+  - propose filters and detectors for anomalous neural patterns
+preferences:
+  prefer_language: ALN
+  contexts:
+    - telemetry_library: ./telemetry/library

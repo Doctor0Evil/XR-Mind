@@ -1,0 +1,12 @@
+module MindPatternFirewall {
+  struct Rule {
+    id: string;
+    pattern: string;
+    action: enum { Block, Allow };
+  }
+
+  datashard FirewallRules {
+    destination: "/registry/firewall";
+    rules: [Rule];
+  }
+}

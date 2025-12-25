@@ -1,0 +1,8 @@
+module BCI_Brainjacking_Guard {
+  datashard GuardRules {
+    id: string;
+    description: string;
+    pattern: string;
+    action: enum { Alert, Quarantine };
+  }
+}

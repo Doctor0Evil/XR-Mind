@@ -1,0 +1,278 @@
+plan RaptorMini_NeuroDefense_ALN v1_0
+{
+  # =======================
+  # 0. OPERATING CONSTRAINTS
+  # =======================
+  goal-constraints:
+    - local-first            # runs locally, no mandatory cloud
+    - experimental-stage     # no “product” promises; flagged as research
+    - user-in-the-loop       # human approvals for risky actions
+    - ALN-priority           # ALN is primary reasoning/target language, Python secondary
+
+  # =======================
+  # 1. ENVIRONMENT & ISOLATION
+  # =======================
+  step 1_env_and_isolation
+  {
+    description "Create a safe, reproducible local sandbox for Raptor-mini."
+
+    actions:
+      - create_conda_or_venv:
+          path: ./envs/raptor-mini
+          notes: "Pin versions for LLM backend, ALN tooling, telemetry libs."
+
+      - enable_sandbox:
+          method: "Docker or devcontainer"
+          config: "./.devcontainer/devcontainer.json"
+          notes: "Isolate network; disable outbound net by default."
+
+      - gpu_and_io_policies:
+          allow: ["GPU for inference","read-only access to code/workspaces"]
+          deny:  ["raw /dev/neurobus0", "unapproved RF/BCI drivers"]
+
+      - repo_structure:
+          root: ./raptor-mini
+          subfolders:
+            - /models          # weights, quantized variants
+            - /agents          # agent configs (ALN, NEUROGATT-DEFENDER)
+            - /telemetry       # neural/xr/bci schemas, adapters
+            - /aln-tooling     # grammars, parser, examples
+            - /tests           # unit + integration tests
+  }
+
+  # =======================
+  # 2. AGENT SPECIALIZATION LAYERS
+  # =======================
+  step 2_define_agent_profiles
+  {
+    description "Define explicit agent roles and capabilities."
+
+    actions:
+      - create_agent_config:
+          file: ./agents/aln_coding_agent.yaml
+          role: "Primary ALN coding agent"
+          skills:
+            - "parse ALN grammar"
+            - "generate ALN modules, datashards, and configs"
+            - "refactor ALN for performance/clarity"
+            - "explain ALN logic in structured comments"
+
+      - create_agent_config:
+          file: ./agents/neuro_telemetry_analyst.yaml
+          role: "Neural-telemetry specialist"
+          skills:
+            - "ingest EEG/EMG/EOG/EDA/PPG metadata schemas"
+            - "design ALN structs/enums for telemetry"
+            - "propose filters and detectors for anomalous neural patterns"
+
+      - create_agent_config:
+          file: ./agents/NEUROGATT_DEFENDER.yaml
+          role: "Neural-defense & NEUROGATT-DEFENDER agent"
+          skills:
+            - "design RF/BT/BCI guard rules in ALN"
+            - "generate eBPF policy snippets and XR engine hooks (in ALN specs)"
+            - "write incident schemas and escalation workflows"
+  }
+
+  # =======================
+  # 3. ALN-FIRST TOOLCHAIN
+  # =======================
+  step 3_aln_native_support
+  {
+    description "Make ALN the first-class language for Raptor-mini."
+
+    actions:
+      - define_aln_grammar:
+          file: ./aln-tooling/aln_grammar.ebnf
+          notes: "Full syntax: modules, datashards, arrays, structs, handlers."
+
+      - build_aln_parser:
+          lang: "Rust or Go"
+          files:
+            - ./aln-tooling/src/parser.rs
+            - ./aln-tooling/src/ast.rs
+          features:
+            - "parse ALN into AST"
+            - "round-trip pretty-printer"
+            - "basic static checks (undeclared ids, type mismatch)"
+
+      - add_aln_lint_rules:
+          file: ./aln-tooling/src/lints.rs
+          rules:
+            - "no_empty_datashardheader"
+            - "require_destination_path"
+            - "disallow_unknown_security_protocols"
+            - "warn_on_unanchored_incident_logging"
+
+      - create_aln_examples:
+          folder: ./aln-tooling/examples/
+          files:
+            - NeuroGuard_MindPatternFirewall.aln
+            - Mindsoft_NeuroControl_Governance_Spec.aln
+            - Global_Neural_Manipulation_Defense_Architecture.aln
+          notes: "Use existing designs as ground-truth patterns for the agent."
+
+      - integrate_aln_mode_into_raptor:
+          config: ./agents/aln_mode_config.yaml
+          behavior:
+            - "prefer ALN completion templates over Python"
+            - "fallback to Python only for helper scripts/CI"
+  }
+
+  # =======================
+  # 4. NEURAL-TELEMETRY & NEURAL-DEFENSE SPECIALIZATION
+  # =======================
+  step 4_neuro_specialization
+  {
+    description "Specialize Raptor-mini in neural-telemetry and defense."
+
+    actions:
+      - define_telemetry_schemas:
+          file: ./telemetry/neuro_stream_schemas.aln
+          contents:
+            - "struct GaleaSensorStreams"
+            - "struct NeurodataComplianceScore"
+            - "struct XRPatternMetrics"
+          goal: "Give the model canonical ALN structures for neuro streams."
+
+      - create_defense_modules:
+          files:
+            - ./telemetry/NeuroGATT_Defender.aln
+            - ./telemetry/BCI_Brainjacking_Guard.aln
+          patterns:
+            - "BLE GATT attacker detection"
+            - "TSN muting rules"
+            - "incident packaging + Hyperledger anchoring"
+
+      - build_reference_library:
+          folder: ./telemetry/library/
+          items:
+            - "risk scoring formulas R, N, H"
+            - "SNN threshold tables"
+            - "jurisdiction tags and compliance strings"
+          use:
+            - "feed as context for Raptor-mini when generating defenses"
+
+      - add_neuro_test_corpus:
+          folder: ./tests/neuro_cases/
+          cases:
+            - "safe_neurofeedback_app"
+            - "suspicious_xr_loop_app"
+            - "rogue_bci_driver_config"
+          expected:
+            - "ALN guard modules"
+            - "incident records"
+            - "block vs allow decisions"
+  }
+
+  # =======================
+  # 5. TRAINING & ADAPTATION LOOP (LOCAL-FRIENDLY)
+  # =======================
+  step 5_local_adaptation
+  {
+    description "Adapt Raptor-mini locally using logs/examples instead of cloud retraining."
+
+    actions:
+      - enable_conversation_logging:
+          file: ./logs/raptor_sessions.jsonl
+          policy:
+            - "store prompts + ALN outputs"
+            - "strip secrets and personal data"
+            - "tag tasks as success/fail manually"
+
+      - curate_finetune_dataset:
+          script: ./scripts/build_aln_dataset.py
+          input:  ./logs/raptor_sessions.jsonl
+          output: ./datasets/aln_neurodefense.jsonl
+          goal:
+            - "high quality ALN examples"
+            - "emphasis on neural-defense patterns"
+
+      - support_lightweight_adapters:
+          method: "LoRA / QLoRA / adapters"
+          note:
+            - "optional; only if hardware allows"
+            - "keep base model unchanged; adapters in ./models/adapters/"
+
+      - add_self-eval_suites:
+          folder: ./tests/self_eval/
+          suites:
+            - "aln_syntax_accuracy"
+            - "neuro_defense_coverage"
+            - "false_positive_rate"
+  }
+
+  # =======================
+  # 6. CI / TEST PIPELINES FOR RAPTOR-MINI
+  # =======================
+  step 6_ci_and_tests
+  {
+    description "Keep the agent experimental but safe via tests."
+
+    actions:
+      - extend_ci_pipeline:
+          file: ./scripts/ci-pipeline.yml
+          jobs:
+            - "run_aln_parser_tests"
+            - "run_neuro_defense_snapshot_tests"
+            - "lint_agents_configs"
+
+      - add_unit_tests:
+          folder: ./tests/unit/
+          includes:
+            - "aln_parser_test.rs"
+            - "neuro_risk_scoring_test.rs"
+            - "mindpattern_registry_test.rs"
+
+      - add_integration_tests:
+          folder: ./tests/integration/
+          scenarios:
+            - "RaptorMini generates NeuroGuard firewall ALN from prompt"
+            - "RaptorMini refactors existing ALN module without breaking semantics"
+  }
+
+  # =======================
+  # 7. DAILY USAGE PLAYBOOK
+  # =======================
+  step 7_usage_playbook
+  {
+    description "Concrete routine for working with Raptor-mini day-to-day."
+
+    actions:
+      - boot_dev_stack:
+          command: "./scripts/run_dev_stack.sh"
+          result: "IDE + local Raptor-mini service + neurosafety-engine up."
+
+      - choose_agent_profile:
+          config_file: "./agents/active_profile.yaml"
+          options:
+            - "aln_coding_agent"
+            - "neuro_telemetry_analyst"
+            - "NEUROGATT_DEFENDER"
+
+      - open_example_project:
+          path: "./examples/safe-xr-game/"
+          task:
+            - "ask agent to design/update mind-pattern firewall ALN modules"
+
+      - review_and_tag:
+          action: "manually tag outputs as good/bad; store in logs"
+          purpose:
+            - "feed adaptation loop in step 5"
+  }
+
+  # =======================
+  # 8. BACKLOG PRIORITIES
+  # =======================
+  step 8_priority_backlog
+  {
+    description "Prioritized next work items."
+
+    priority_order:
+      1. Finish ALN grammar + parser + lints (step 3)
+      2. Add core neuro-telemetry & NEUROGATT-DEFENDER ALN modules (step 4)
+      3. Wire Raptor-mini to use ALN examples as primary reasoning context
+      4. Build CI tests for ALN correctness + safety
+      5. Optional: add lightweight adapters for local fine-tuning
+  }
+}

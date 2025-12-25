@@ -1,0 +1,11 @@
+# Primary ALN coding agent config
+role: aln_coding_agent
+description: "Primary ALN coding agent"
+skills:
+  - parse ALN grammar
+  - generate ALN modules, datashards, and configs
+  - refactor ALN for performance/clarity
+  - explain ALN logic in structured comments
+preferences:
+  prefer_language: ALN
+  fallback_language: python

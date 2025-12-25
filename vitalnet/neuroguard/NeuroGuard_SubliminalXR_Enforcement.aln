@@ -1,0 +1,210 @@
+# File: /vitalnet/neuroguard/NeuroGuard_SubliminalXR_Enforcement.aln
+# Format: Production ALN module
+# Role: Turn freedom-of-thought + neurorights + NIST CSF 2.0 into a concrete XR “subliminal distortion” test + enforcement pipeline. [web:0][web:1]
+
+module VitalNet.NeuroGuard.SubliminalXR v1.3.0
+{
+    import VitalNet.NIST.CSF2;
+    import VitalNet.Ledger.HyperledgerVital;
+    import VitalNet.XR.Runtime;
+    import VitalNet.NeuroModels;
+    import VitalNet.NeuroRights;
+
+    # =========================
+    # 1. HUMAN-RIGHTS TEST CORE
+    # =========================
+
+    struct XRPatternMetrics
+    {
+        float cognitive_interference;   # EEG/eye-tracking deviation vs baseline. [conversation_history:0]
+        float control_erosion;          # No-exit, repetition, lock-in index. [conversation_history:0]
+        float consent_score;            # 1 = explicit, informed, revocable; 0 = none. [conversation_history:0]
+        float concealment_score;        # 1 = fully hidden, 0 = fully transparent. [conversation_history:0]
+        float power_asymmetry;          # 1 = strong operator advantage. [conversation_history:0]
+        float demonstrable_harm;        # 1 = strong evidence of harm. [conversation_history:0]
+    };
+
+    struct SubliminalAssessment
+    {
+        float freedom_of_thought_score; # Two-part test result. [conversation_history:0]
+        float neurorights_score;        # Consent + concealment + asymmetry + harm. [conversation_history:0]
+        bool  is_prohibited;            # Treat as AI Act 5(1)(a) subliminal distortion. [conversation_history:0][web:1]
+    };
+
+    parameters:
+    {
+        float interference_threshold   = 0.30;  # Beyond de minimis cognitive shift. [conversation_history:0]
+        float control_erosion_threshold= 0.30;
+        float neurorights_threshold    = 0.70;  # Consent+concealment+asymmetry+harm composite. [conversation_history:0]
+    }
+
+    function evaluate_freedom_of_thought(XRPatternMetrics m) -> float
+    {
+        # Interference + control-erosion test. [conversation_history:0]
+        float part1 = clamp(m.cognitive_interference / interference_threshold, 0.0, 1.0);
+        float part2 = clamp(m.control_erosion      / control_erosion_threshold, 0.0, 1.0);
+        return 0.5 * part1 + 0.5 * part2;
+    }
+
+    function evaluate_neurorights(XRPatternMetrics m) -> float
+    {
+        # Consent (inverse), concealment, power asymmetry, harm. [conversation_history:0]
+        float c  = 1.0 - clamp(m.consent_score,      0.0, 1.0);  # lack of consent
+        float cc = clamp(m.concealment_score,        0.0, 1.0);
+        float pa = clamp(m.power_asymmetry,          0.0, 1.0);
+        float h  = clamp(m.demonstrable_harm,        0.0, 1.0);
+        return 0.25 * (c + cc + pa + h);
+    }
+
+    function assess_subliminal(XRPatternMetrics m) -> SubliminalAssessment
+    {
+        SubliminalAssessment a;
+
+        a.freedom_of_thought_score = evaluate_freedom_of_thought(m);
+        a.neurorights_score        = evaluate_neurorights(m);
+
+        # Prohibited if both tests cross normative thresholds. [conversation_history:0][web:1]
+        if a.freedom_of_thought_score >= 1.0
+           and a.neurorights_score    >= neurorights_threshold then
+            a.is_prohibited = true;
+        else
+            a.is_prohibited = false;
+        end
+
+        return a;
+    }
+
+    # ==========================================
+    # 2. NEUROGUARD-STYLE NEURO-SYMBOLIC ENGINE
+    # ==========================================
+
+    interface INeuroSymbolicDetector
+    {
+        XRPatternMetrics infer_from_signals(EEGWindow eeg, EyeTrackWindow gaze, XRStimulus stim);
+    }
+
+    class NeuroGuardDetector implements INeuroSymbolicDetector
+    {
+        # CNN/Transformer + rules (obedience loops, covert persuasion). [conversation_history:0]
+        model core = NeuroModels.Load("neuroguard_cnn_transformer_v2");
+
+        function infer_from_signals(EEGWindow eeg, EyeTrackWindow gaze, XRStimulus stim) -> XRPatternMetrics
+        {
+            XRPatternMetrics m;
+
+            Vector features = core.Encode(eeg, gaze, stim);
+            m.cognitive_interference = features["cog_interf"];   # attention/emotion drift. [conversation_history:0]
+            m.control_erosion        = features["control_loss"];
+            m.consent_score          = NeuroRights.ConsentEstimator(stim);
+            m.concealment_score      = NeuroRights.ConcealmentEstimator(stim);
+            m.power_asymmetry        = NeuroRights.AsymmetryEstimator(stim);
+            m.demonstrable_harm      = NeuroRights.HarmEstimator(stim);
+
+            return m;
+        }
+    }
+
+    # ==========================================
+    # 3. NIST CSF 2.0–ALIGNED PIPELINE (G/ID/PR/DE/RS/RC)
+    # ==========================================
+
+    workflow NIST_Pipeline v2_0
+    {
+        # GOVERN: encode roles and neurorights policy. [web:0]
+        govern:
+        {
+            role_owner      = "ChiefNeuroSafetyOfficer";
+            policy_id       = "XR_Subliminal_Distortion_Policy_v1";
+            frameworks      = ["NIST_CSF2_GV/ID/PR/DE/RS/RC","EU_AI_Act_5_1_a","ICCPR_Art18","Chile_Law_21_383"]; [web:0][web:1]
+        }
+
+        # IDENTIFY: locate XR flows & assets that can affect cognition. [web:0]
+        identify:
+        {
+            assets = XR.Runtime.Registry.Scan(["voice","haptics","BCI","NPC_dialog","shader_flicker"]);
+        }
+
+        # PROTECT: pre-ship checks (static + design review).
+        protect:
+        {
+            DesignReview.RequireNeuroRightsGrid(assets);   # consent/concealment/asymmetry/harm table. [conversation_history:0]
+            StaticScan.ApplyRules("subliminal_patterns_ruleset_v1"); # obedience scripts, hidden flicker, etc. [conversation_history:0]
+        }
+
+        # DETECT: runtime NeuroGuard monitoring. [conversation_history:0]
+        detect:
+        {
+            NeuroGuardDetector det;
+
+            on XR.Runtime.Frame(eeg, gaze, stim)
+            {
+                XRPatternMetrics m = det.infer_from_signals(eeg, gaze, stim);
+                SubliminalAssessment a = assess_subliminal(m);
+
+                if a.is_prohibited then
+                    respond.handle_block(stim, a, m);
+                end
+            }
+        }
+
+        # RESPOND: immediate block + user notice. [web:0]
+        respond:
+        {
+            function handle_block(XRStimulus stim, SubliminalAssessment a, XRPatternMetrics m)
+            {
+                XR.Runtime.Mute(stim.channel_id);
+                XR.Runtime.ShowKillSwitchBanner("Subliminal pattern blocked under freedom-of-thought safeguards."); [conversation_history:0]
+
+                Incident inc;
+                inc.id        = UUID.v4();
+                inc.category  = "XR_Subliminal_Distortion";
+                inc.severity  = "HIGH";
+                inc.metrics   = m;
+                inc.assess    = a;
+
+                recover.store_and_anchor(inc);
+            }
+        }
+
+        # RECOVER: immutable evidence + governance loop. [web:0]
+        recover:
+        {
+            function store_and_anchor(Incident inc)
+            {
+                # Append-only, supply-chain-safe audit entry. [web:1]
+                HyperledgerVital.Append(inc);
+                CSF2.LessonsLearned.Register(inc);   # feeds back into Govern/Protect tiers. [web:0]
+            }
+        }
+    }
+
+    # ==========================================
+    # 4. ENGINE/PLATFORM BINDINGS (UNREAL/UNITY/GODOT)
+    # ==========================================
+
+    binding UnrealEngine_NeuroGuard v1.0
+    {
+        hook_eeg_stream     = "/plugins/neuro/eeg";
+        hook_eye_tracking   = "/plugins/ux/eyegaze";
+        hook_voice_bus      = "/audio/xr/voice";
+        hook_shader_channels= "/render/xr/flicker";
+
+        on_startup:
+        {
+            NIST_Pipeline.govern;
+            NIST_Pipeline.identify;
+            NIST_Pipeline.protect;
+        }
+
+        on_tick:
+        {
+            # Calls NIST_Pipeline.detect via event wiring above. [web:0]
+        }
+    }
+
+    binding Unity_Godot_NeuroGuard v1.0
+    {
+        # Equivalent hooks for XR/BCI and WebXR. [conversation_history:0]
+        # Implemented via C#/C++ bindings to this ALN module.
+    }
+}

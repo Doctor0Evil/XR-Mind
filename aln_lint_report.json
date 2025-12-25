@@ -1,0 +1,27 @@
+{
+  "files": [
+    {
+      "path": ".\\raptor-mini\\telemetry\\NeuroGATT_Defender.aln",
+      "errors": [
+        "SCHEMA:handler_missing_termination"
+      ]
+    },
+    {
+      "path": ".\\systems\\neuromind\\Mindsoft_VSG_Core.aln",
+      "errors": [
+        "SCHEMA:handler_missing_termination"
+      ]
+    },
+    {
+      "path": ".\\vitalnet\\chilesupremegalea\\ChileSupremeGalea_NeuroRights.aln",
+      "errors": [
+        "SCHEMA:handler_missing_termination"
+      ]
+    }
+  ],
+  "summary": {
+    "total": 16,
+    "passed": 13,
+    "failed": 3
+  }
+}

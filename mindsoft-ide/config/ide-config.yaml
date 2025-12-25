@@ -1,0 +1,4 @@
+# Default IDE scaffold configuration
+defaults:
+  language: typescript
+  template: basic-web-ide

@@ -1,0 +1,7 @@
+{
+  "name": "Raptor-mini Dev Container",
+  "image": "mcr.microsoft.com/devcontainers/base:ubuntu",
+  "runArgs": ["--network=none"],
+  "features": {},
+  "postCreateCommand": "bash ./scripts/post_create.sh || true"
+}

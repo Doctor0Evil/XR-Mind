@@ -1,0 +1,74 @@
+# File: /systems/neuromind/Mindsoft_VSG_Core.aln
+# Description: Voice Safety Grammar (VSG) Shield - Enterprise-grade ALN Module
+# Purpose: Detects, quantifies, and blocks hypnotic, coercive, or subliminal neural patterns in BCI/XR environments.
+
+module Mindsoft.VSG.Core v1.0.8
+{
+    import Neuromix.Audio;
+    import VitalNet.QPU;
+    import Blockchain.HyperledgerVital;
+    import Secure.Hash256;
+
+    parameters:
+        max_hypnotic_loop_score = 0.3;
+        max_coercion_score = 0.3;
+        max_subliminal_score = 0.3;
+
+    array<float> prosody_drift_samples[2048];
+    array<float> loop_window[1024];
+    array<float> command_density[512];
+
+    struct VSGRecord {
+        string voice_stream_id;
+        string app_id;
+        float repetition_rate_hz;
+        float prosody_drift;
+        float embedded_command_density;
+        float hypnotic_loop_score;
+        float coercion_score;
+        float subliminal_score;
+        string action_on_violation;
+    };
+
+    function analyze(AudioBuffer audio, Transcript text) -> VSGRecord {
+        VSGRecord r;
+
+        r.voice_stream_id = UUID.generate();
+        r.repetition_rate_hz = CountRepetitions(text) / GetWindowSeconds(audio);
+        r.prosody_drift = IntegratePitchChange(audio);
+        r.embedded_command_density = CountImperatives(text) / CountTotalTokens(text);
+
+        r.hypnotic_loop_score = Clamp(r.repetition_rate_hz * 1.2, 0.0, 1.0);
+        r.coercion_score = Clamp(r.embedded_command_density, 0.0, 1.0);
+        r.subliminal_score = Clamp(r.prosody_drift / 25.0, 0.0, 1.0);
+
+        if r.hypnotic_loop_score > max_hypnotic_loop_score then
+            r.action_on_violation = "block";
+        else if r.coercion_score > max_coercion_score then
+            r.action_on_violation = "attenuate";
+        else if r.subliminal_score > max_subliminal_score then
+            r.action_on_violation = "mute";
+        else
+            r.action_on_violation = "allow";
+        end
+
+        HyperledgerVital.LogImmutable(r);
+        return r;
+    }
+
+    function enforce(VSGRecord vsg, VoiceChannel channel) {
+        select vsg.action_on_violation:
+            case "block": channel.Mute(); Blockchain.Evidence("BLOCKED", vsg);
+            case "attenuate": channel.ReduceGain(0.5);
+            case "mute": channel.Mute();
+            case "allow": pass;
+        end
+    }
+
+    handler CoreCycle {
+        AudioBuffer current_audio = NeuralInterceptor.GetAudio();
+        Transcript current_text = SpeechParser.Parse(current_audio);
+        VSGRecord results = analyze(current_audio, current_text);
+        enforce(results, NeuralInterceptor.ActiveChannel());
+    }
+}

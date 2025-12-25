@@ -1,0 +1,10 @@
+# ALN grammar (EBNF) - skeleton
+
+module        = "module" , identifier , "{" , { declaration } , "}" ;
+declaration   = datashard | struct | handler | import ;
+datashard     = "datashard" , identifier , "{" , { field } , "}" ;
+struct        = "struct" , identifier , "{" , { field } , "}" ;
+field         = identifier , ":" , type_spec , ["=" , literal] , ";" ;
+handler       = "handler" , identifier , "(" , [ params ] , ")" , "{" , { statement } , "}" ;
+
+# Types, arrays, maps, comments, etc. (expand as needed)

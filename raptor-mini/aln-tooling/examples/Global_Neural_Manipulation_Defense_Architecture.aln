@@ -1,0 +1,6 @@
+// Placeholder global defense architecture
+module GlobalDefense {
+  datashard Anchors {
+    ledger: string;
+  }
+}

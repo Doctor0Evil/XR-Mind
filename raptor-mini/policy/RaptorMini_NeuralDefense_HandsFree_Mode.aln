@@ -1,0 +1,204 @@
+policy RaptorMini.HandsFree.NeuralDefense v1_0
+{
+  # ======================
+  # 1. USER EXPERIENCE GOALS
+  # ======================
+  goals:
+    - "No coding required: everything configured via simple toggles and presets."
+    - "Hands-free: once enabled, protection runs automatically in the background."
+    - "Continuously evolving: the system learns from new patterns without manual tuning."
+    - "Zero tolerance: no hypnotic or coercive voice/signals allowed through local networks or XR stacks."
+
+  # ======================
+  # 2. ONE-TIME SETUP (NON-TECHNICAL)
+  # ======================
+  step one_time_setup
+  {
+    description "Simple initial setup a non-technical user can complete."
+
+    actions:
+      - present_wizard_screen:
+          title: "Activate Neural Defense"
+          choices:
+            - "Protect this PC"
+            - "Protect this XR headset"
+            - "Protect my whole home network (advanced, optional)"
+
+      - simple_toggle_options:
+          options:
+            - "Block hypnotic voice and loops"
+            - "Block suspicious XR scenes and flicker"
+            - "Extra protection for vulnerable users (kids / fatigued)"
+          default: "all_on"
+
+      - auto_install_agents:
+          components:
+            - "System Watcher"        # monitors apps & network
+            - "XR/BCI Shield"         # monitors AR/VR/MR/XR
+            - "Voice & Audio Filter"  # monitors microphones + audio streams
+          note: "No coding, no command line; single 'Finish' button to apply."
+
+      - confirm_dashboard:
+          show:
+            - big_status_light: "Protected"
+            - buttons:
+              - "Pause Protection"
+              - "View Last Alerts"
+              - "Advanced (optional)"
+  }
+
+  # ======================
+  # 3. CONTINUOUS, HANDS-FREE MONITORING
+  # ======================
+  step continuous_monitoring
+  {
+    description "Always-on protection with minimal user interruptions."
+
+    behaviors:
+      - monitor_sources:
+          targets:
+            - "All AR/VR/MR/XR apps and games"
+            - "Any app accessing microphones or XR audio"
+            - "Any device or driver labeled BCI/EEG/EMG/EOG"
+            - "All local network traffic tagged as media/voice/XR"
+          method:
+            - "System-level hooks and XR engine integrations (no user scripting)."
+
+      - check_for_mindcontrol_patterns:
+          includes:
+            - "Repetitive command loops and trance-like phrases"
+            - "Hidden flicker or visual strobe above safe thresholds"
+            - "Binaural / bandwave patterns tuned to neural entrainment ranges"
+            - "XR scenes that force attention with no clear exit"
+            - "Unknown apps opening neuro/BCI-style channels"
+
+      - automatic_actions:
+          on_detected_high_risk:
+            - "Instantly mute the audio or voice channel"
+            - "Dim or freeze the XR scene to a safe neutral view"
+            - "Block the app or network connection that carries the pattern"
+            - "Log the event for later review (no technical skill needed)."
+
+      - low_noise_alerts:
+          rules:
+            - "Only show a pop-up if something was blocked."
+            - "Message format: 'We blocked a suspicious neural pattern from App X.'"
+            - "Allow a simple 'OK' or 'Report this'—no extra steps."
+  }
+
+  # ======================
+  # 4. ZERO-TRUST NEURAL-SIGNAL POLICY
+  # ======================
+  step zero_trust_neural_signals
+  {
+    description "Treat all neural-like signals as untrusted until proven safe."
+
+    policies:
+      - default_block_for_unknown_neural_streams:
+          applies_to:
+            - "New BCI devices"
+            - "Unrecognized XR plug-ins"
+            - "Custom drivers trying to access neural data"
+          behavior:
+            - "Deny access until the user explicitly approves in a simple dialog."
+
+      - no_direct_neurobus_access:
+          rule: "No software is allowed to talk directly to any neuro/BCI device or neuromorphic node."
+          enforcement:
+            - "All such traffic must pass through the Neural Defense Guard, which auto-filters patterns."
+
+      - voice_and_audio_guard:
+          rule: "Any voice or audio that matches mind-control-like patterns is blocked before it reaches speakers or XR headsets."
+          enforcement:
+            - "Guard runs at the system audio layer, not app-by-app."
+
+      - network_level_neural_filter:
+          rule: "Local network routes (Wi‑Fi, Ethernet, dev-tunnels) cannot carry known hypnotic/loop patterns."
+          enforcement:
+            - "Router or gateway agent inspects media flows; blocks or throttles suspicious ones."
+  }
+
+  # ======================
+  # 5. NON-TECHNICAL CONTROL & FEEDBACK
+  # ======================
+  step user_controls
+  {
+    description "Simple, clear controls for non-technical users."
+
+    components:
+      - main_status_panel:
+          shows:
+            - protection_state: "On / Paused"
+            - last_blocked: "App/Source name and time"
+            - overall_health: "OK / Warnings"
+
+      - quick_actions:
+          buttons:
+            - "Pause protection (15 minutes)"
+            - "Resume protection"
+            - "View log in plain language"
+          logs:
+            - "Explain each blocked event in everyday words (no code)."
+
+      - profile_modes:
+          options:
+            - "Standard protection"
+            - "High sensitivity (for vulnerable users)"
+            - "Relaxed (for trusted environments)"
+          change:
+            - "Single dropdown or slider; no scripting."
+
+      - export_for_help:
+          function:
+            - "Export a sanitized report for doctors, lawyers, or trusted experts."
+            contents:
+              - "What was blocked"
+              - "When and by which app/device"
+              - "Why it was considered risky (short explanation)."
+  }
+
+  # ======================
+  # 6. CONTINUOUS EVOLUTION (NO USER TUNING)
+  # ======================
+  step continuous_learning
+  {
+    description "Improve defenses over time without requiring the user to tune anything."
+
+    behaviors:
+      - safe_pattern_updates:
+          mechanism:
+            - "Signed pattern and rule updates from a trusted source."
+            - "Installed automatically in the background."
+          user_view:
+            - "Optional notification: 'Neural defense definitions updated.'"
+
+      - local_adaptation:
+          method:
+            - "The system notes which apps you use often and which alerts you dismiss."
+            - "It reduces false alarms while keeping hard blocks on clearly harmful patterns."
+
+      - offline_friendly:
+          rules:
+            - "Core protection works even when fully offline."
+            - "Any cloud learning is optional and disabled by default for privacy."
+
+      - privacy_preserving:
+          guarantee:
+            - "No raw neural data is ever sent out; only anonymous pattern statistics if you opt-in."
+  }
+
+  # ======================
+  # 7. GUARANTEES AND LIMITS (USER-FACING)
+  # ======================
+  step guarantees_and_limits
+  {
+    guarantees:
+      - "The system will always try to block hypnotic or coercive signals before you see or hear them."
+      - "You do not need to write code, configure firewalls, or understand machine learning."
+      - "You stay in control: you can pause or disable protection at any time."
+
+    limits:
+      - "No system can promise 100% safety, but neural-defense patterns are continuously updated."
+      - "Some false alarms may occur; you can mark them as safe to help the system learn."
+  }
+}

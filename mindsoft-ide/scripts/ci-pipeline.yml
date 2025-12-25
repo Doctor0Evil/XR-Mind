@@ -1,0 +1,12 @@
+# CI/CD pipeline template (GitHub Actions / GitLab CI snippets go here)
+name: CI
+
+on: [push, pull_request]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Placeholder build step
+        run: echo "Add build/test steps here"

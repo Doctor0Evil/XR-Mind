@@ -1,0 +1,4 @@
+# blocklist.yaml (sanitized entries)
+blocked_patterns:
+  - id: dangerous-subliminal
+    reason: "Contains unsafe subliminal influence vectors"

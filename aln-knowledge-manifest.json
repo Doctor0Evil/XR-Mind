@@ -1,0 +1,10 @@
+{
+  "safety_workflows": {
+    "reports": ["aln_lint_report_*.json"],
+    "suggestions": ["docs/aln-safety-suggestions.md"],
+    "templates": [
+      ".github/ISSUE_TEMPLATE/aln-safety-failure.md",
+      ".github/PULL_REQUEST_TEMPLATE/aln-safety-fix.md"
+    ]
+  }
+}

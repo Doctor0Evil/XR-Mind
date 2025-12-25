@@ -1,0 +1,7 @@
+<VSCode.Cell language="markdown"># BCI Lab Demo
+This notebook demonstrates safe-data handling in the BCI lab.</VSCode.Cell>
+<VSCode.Cell language="python"># Import
+import numpy as np
+
+# Placeholder analysis
+print('BCI lab demo placeholder')</VSCode.Cell>

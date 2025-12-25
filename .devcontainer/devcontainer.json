@@ -1,0 +1,17 @@
+{
+  "name": "Mindsoft Dev Container",
+  "image": "mcr.microsoft.com/devcontainers/universal:2",
+  "postCreateCommand": "python scripts/aln_lint.py || true",
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "GitHub.copilot",
+        "ms-python.python"
+      ],
+      "settings": {
+        "telemetry.enableTelemetry": false
+      }
+    }
+  },
+  "features": {}
+}

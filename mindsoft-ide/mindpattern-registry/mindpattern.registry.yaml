@@ -1,0 +1,5 @@
+# mindpattern.registry.yaml
+patterns:
+  - id: example-subliminal
+    description: "Example pattern entry (sanitized)"
+    tags: ["subliminal", "audio"]

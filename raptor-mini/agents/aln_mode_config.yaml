@@ -1,0 +1,4 @@
+# Config to prefer ALN completions
+aln_mode:
+  prefer_aln: true
+  fallback_python_for: ["scripts", "tests"]

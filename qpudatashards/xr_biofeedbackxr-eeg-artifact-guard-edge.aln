@@ -1,0 +1,59 @@
+filename xr-eeg-artifact-guard-edge.aln
+destination qpudatashards/xr_biofeedback
+
+TITLE XR Edge EEG Artifact Guard Datashard
+purpose Real-time removal of EMG/EOG/environmental artifacts from wearable EEG on XR devices using mobile NPU, preserving clinically relevant bands for biofeedback and safety analytics.
+
+datashard.header
+destination-path,module,version,role,security-protocol,device-type,ai-accelerator,sample-rate-hz,channels,compliance,log-persistence
+vnodebcixrheadset,EEGArtifactGuard,1.0.0,BiofeedbackClean,AES256-Local,XR-HMD-SoC,APU3.0-NPU,250,16,IEEE-FDA-ISNR,NIST-HashChain-30d
+
+eeg.signal-config
+sampling_rate_hz 250
+channels 8-16
+resolution_bits 24
+window_length_s 1.0
+window_overlap 0.5
+
+model.pipeline
+stage1 bandpass_notch 0.5-45Hz,50/60Hz_notch
+stage2 deep_autoencoder_edge
+  - input_shape (channels,window_samples)
+  - params_count_max 500k
+  - ops_per_window 5e6
+  - quantization int8
+  - target_latency_ms 10
+stage3 residual_correction
+  - clamp spectral distortion in alpha,beta,gamma bands
+  - preserve ERPs and slow-drift trends
+
+hardware.mapping
+soc MediaTek-Dimensity-1000-Plus
+npu_perf_tops 4.5
+gpu Mali-G77-MP9
+scheduler CorePilot-like
+  - priority EEG_CLEAN > XR_SAFETY > GAME_FX
+  - max_npu_utilization_pct 40
+  - idle-cycle-offload enabled
+
+artifact.classes
+types EOG-blink,EOG-saccade,EMG-facial,EMG-neck,Motion,LineNoise
+labels used for supervised training and runtime tagging
+fallback if model_confidence < 0.6 then bypass_clean and flag_for_review
+
+math.proof
+statement Given NPU=4.5 TOPS and model_ops=5e6 per 1s window, raw compute budget << 1 ms; with overhead, keeping artifact removal <10 ms satisfies XR biofeedback loops targeting <100 ms end-to-end latency.
+explanation Divide model operations by NPU capacity to bound theoretical execution time, then budget remaining time for data movement and scheduling, ensuring responsiveness for closed-loop XR interactions.
+
+scientific.grounding
+fact Edge deployments of deep autoencoder EEG artifact removal have been demonstrated on embedded systems, confirming feasibility of on-device denoising for wearable EEG, with power consumption as the primary design constraint.
+source EEG artifact removal at the edge using AI hardware; state-of-the-art and deep-learning reviews.
+
+legal-terms
+text Wearable XR biofeedback platforms must process EEG data on-device wherever possible, employ validated artifact-removal algorithms that preserve clinically relevant features, and document model behavior, training data, and limitations in accordance with neurofeedback practice guidelines, medical-device norms, and cybersecurity frameworks, including explicit informed consent for neural data processing and 30-day tamper-evident logging of safety-critical decisions.
+
+geography.evidence
+locations Phoenix-AZ-USA,Manchester-UK,Berlin-Germany,Oslo-Norway,Singapore-City
+
+binary.overview
+010001010110001101100111011001010010000001000001010100100111010001101001011001100110000101100011011101000010000001010010011001010110110101101111011101100110000101101100001000000110011101110101011000010111001001100100001000000110010101100100011001110110010101101000011001010110000101100100011100110010000001101111011011100010000001001110010100000101010101000011011010010110111001100101

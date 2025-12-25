@@ -1,0 +1,22 @@
+filename neuroshield-complete.aln
+destination qpudatashards/xr_guardian
+
+TITLE NeuroShield Guardian Production Datashard
+purpose Full XR safety stack: detection, policy, MT6883 hardening, forensic chain.
+
+datashard.header
+destination-path,module,version,role,security,soc-support,compliance,ledger
+vnodeglobalxrguard,NeuroShieldProd,1.1.0,PlatformGuardian,AES256-ChaCha20,MT6883+,EUAI-FTC-NIST,HashChain-PBFT
+
+risk.model R = 0.3V + 0.2A + 0.2I + 0.2T + 0.1B
+thresholds GLOBAL:0.75 EU:0.65 US:0.70
+actions ATTENUATE|BLOCK|CONSENT_REQ
+
+mt6883.hardening
+if vuln_firmware: BYPASS_DSP, FIDO2_MIC, status=PARTIAL_PATCH_REQ
+
+logging H_n = SHA256(fields_n || H_{n-1})
+retention 30d onchain_metadata offchain_raw
+
+deployment platform_openxr_webxr_os
+non_bypassable true
